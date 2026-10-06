@@ -1,0 +1,25 @@
+--- a/src/draw/sw/lv_draw_sw.c
++++ b/src/draw/sw/lv_draw_sw.c
+@@ -418,6 +418,12 @@
+ #endif
+ static void execute_drawing(lv_draw_task_t * t)
+ {
++#ifdef ESP_PLATFORM
++    extern bool s3_profile_enabled;
++    extern int64_t esp_timer_get_time(void);
++    extern void s3_draw_profile(unsigned type, int64_t elapsed);
++    int64_t profile_start=s3_profile_enabled ? esp_timer_get_time() : 0;
++#endif
+     LV_PROFILER_DRAW_BEGIN;
+     /*Render the draw task*/
+     switch(t->type) {
+@@ -469,6 +475,9 @@
+     }
+ 
+ 
++#ifdef ESP_PLATFORM
++    if(profile_start) s3_draw_profile(t->type,esp_timer_get_time()-profile_start);
++#endif
+     LV_PROFILER_DRAW_END;
+ }
+ 

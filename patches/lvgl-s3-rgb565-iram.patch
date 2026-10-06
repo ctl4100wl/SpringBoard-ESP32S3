@@ -1,0 +1,17 @@
+--- a/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c
++++ b/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c
+@@ -263,7 +263,13 @@
+  * @param dsc            the fill descriptor holding the destination buffer, area and
+  *                       stride, the fill color, the opacity and the optional mask
+  */
+-void LV_ATTRIBUTE_FAST_MEM lv_draw_sw_blend_color_to_rgb565(lv_draw_sw_blend_fill_dsc_t * dsc)
++#ifdef ESP_PLATFORM
++#include "esp_attr.h"
++#define S3_FILL_FAST IRAM_ATTR
++#else
++#define S3_FILL_FAST LV_ATTRIBUTE_FAST_MEM
++#endif
++void S3_FILL_FAST lv_draw_sw_blend_color_to_rgb565(lv_draw_sw_blend_fill_dsc_t * dsc)
+ {
+     int32_t w = dsc->dest_w;
+     int32_t h = dsc->dest_h;

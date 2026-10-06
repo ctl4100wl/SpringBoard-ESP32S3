@@ -1,1 +1,2 @@
-# SpringBoard-ESP32S3
+# SpringBoard on ESP32-S3
+

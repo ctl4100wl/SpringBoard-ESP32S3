@@ -1,0 +1,30 @@
+--- a/src/libs/thorvg/tvgSwRaster.cpp
++++ b/src/libs/thorvg/tvgSwRaster.cpp
+@@ -1616,7 +1616,10 @@
+ 
+ void rasterPixel32(uint32_t *dst, uint32_t val, uint32_t offset, int32_t len)
+ {
+-#if defined(THORVG_AVX_VECTOR_SUPPORT)
++#if defined(ESP_PLATFORM)
++    extern void s3_thorvg_fill32(uint32_t *, uint32_t, int) asm("s3_thorvg_fill32");
++    s3_thorvg_fill32(dst + offset, val, len);
++#elif defined(THORVG_AVX_VECTOR_SUPPORT)
+     avxRasterPixel32(dst, val, offset, len);
+ #elif defined(THORVG_NEON_VECTOR_SUPPORT)
+     neonRasterPixel32(dst, val, offset, len);
+--- a/src/draw/sw/lv_draw_sw_vector.c
++++ b/src/draw/sw/lv_draw_sw_vector.c
+@@ -75,7 +75,13 @@
+     color->r = c->red;
+     color->g = c->green;
+     color->b = c->blue;
++    /* Preserve the opaque endpoint so ThorVG can use its solid span path.
++     * The approximate /256 mix otherwise turns 255 * 255 into 254. */
++#if defined(ESP_PLATFORM)
++    color->a = (c->alpha == LV_OPA_COVER && opa == LV_OPA_COVER) ? LV_OPA_COVER : LV_OPA_MIX2(c->alpha, opa);
++#else
+     color->a = LV_OPA_MIX2(c->alpha, opa);
++#endif
+ }
+ 
+ static void lv_matrix_to_tvg(Tvg_Matrix * tm, const lv_matrix_t * m)

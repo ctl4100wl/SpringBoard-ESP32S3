@@ -1,0 +1,28 @@
+--- a/src/core/lv_refr.c
++++ b/src/core/lv_refr.c
+@@ -1065,6 +1065,25 @@
+         lv_draw_buf_clear_ex(layer->draw_buf, &clear_area, layer);
+     }
+ 
++#ifdef ESP_PLATFORM
++    /* Use the existing cover check across overlay layers too. Opaque lock
++     * screens and full-screen overlays make the screen below them invisible.
++     * Transforms, rounded corners and translucency are rejected by the cover
++     * checker, so glass panes still receive their original backdrop. */
++    lv_obj_t * overlay = lv_refr_get_top_obj(&layer->_clip_area, lv_display_get_layer_sys(disp_refr));
++    if(overlay) {
++        refr_obj_and_children(layer, overlay);
++        LV_PROFILER_REFR_END;
++        return;
++    }
++    overlay = lv_refr_get_top_obj(&layer->_clip_area, lv_display_get_layer_top(disp_refr));
++    if(overlay) {
++        refr_obj_and_children(layer, overlay);
++        refr_obj_and_children(layer, lv_display_get_layer_sys(disp_refr));
++        LV_PROFILER_REFR_END;
++        return;
++    }
++#endif
+     lv_obj_t * top_act_scr = NULL;
+     lv_obj_t * top_prev_scr = NULL;
+ 
